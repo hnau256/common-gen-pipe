@@ -25,6 +25,7 @@ android {
 
 kotlin {
     jvm()
+    linuxX64()
 
     androidTarget {
         compilerOptions {
@@ -36,8 +37,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.hnau.kotlin)
-                implementation(libs.arrow.core)
             }
         }
         jvmMain
