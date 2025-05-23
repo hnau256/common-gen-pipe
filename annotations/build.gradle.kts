@@ -24,7 +24,7 @@ android {
 }
 
 kotlin {
-    jvm("desktop")
+    jvm()
 
     androidTarget {
         compilerOptions {
@@ -40,6 +40,8 @@ kotlin {
                 implementation(libs.arrow.core)
             }
         }
+        jvmMain
+        androidMain
     }
 }
 
@@ -47,9 +49,8 @@ publishing {
     publications {
         configureEach {
             (this as MavenPublication).apply {
-                groupId = project.group as String // Наследуется от корневого проекта
-                artifactId = project.name // Имя модуля как artifactId
-                version = project.version as String // Наследуется от корневого проекта
+                groupId = project.group as String
+                version = project.version as String
             }
         }
     }

@@ -12,7 +12,7 @@ allprojects {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
     group = "com.github.hnau256"
-    version = "1.0.0"
+    version = "1.0.1"
 }
 
 
