@@ -1,0 +1,1 @@
+./gradlew :test:first:kspKotlin --console plain --info --no-daemon | grep "\[ksp\]"

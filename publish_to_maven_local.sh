@@ -1,0 +1,1 @@
+./gradlew :annotations:publishToMavenLocal && ./gradlew :processor:publishToMavenLocal
