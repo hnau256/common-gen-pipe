@@ -15,6 +15,8 @@ internal fun Iterable<InterfaceToImplement>.implement(
 ) {
     val implemented = HashMap<KSClassDeclaration, ImplementedInterface>()
     var toImplement: Set<InterfaceToImplement> = toSet()
+    val toImplementLog = toImplement.joinToString { it.declaration.qualifiedNameOrThrow.log }
+    logger.info("Need implement: $toImplementLog")
 
     do {
         val implementedOnThisStep = toImplement
@@ -61,21 +63,24 @@ private fun InterfaceToImplement.tryImplement(
 ): ImplementedInterface? {
 
 
-    val dependents: Map<InterfaceToImplement.FactoryMethod, Dependent> = factoryMethods.associateWith { dependent ->
-        val dependentType = dependent.result
-        val dependentDeclaration = dependentType.declaration as KSClassDeclaration
-        alreadyImplemented[dependentDeclaration] ?: run {
-            val willBeImplementedInFuture = toImplement.any { it.declaration == dependentDeclaration }
-            if (willBeImplementedInFuture) {
-                null
-            } else {
-                ForeignDependentImplementation.create(
-                    interfaceDeclaration = dependentDeclaration,
-                    resolver = resolver,
-                )
-            }
-        } ?: return null
-    }
+    val dependents: Map<InterfaceToImplement.FactoryMethod, Dependent> =
+        factoryMethods.associateWith { dependent ->
+            val dependentType = dependent.result
+            val dependentDeclaration = dependentType.declaration as KSClassDeclaration
+            alreadyImplemented[dependentDeclaration] ?: run {
+                val willBeImplementedInFuture =
+                    toImplement.any { it.declaration == dependentDeclaration }
+                if (willBeImplementedInFuture) {
+                    null
+                } else {
+                    ForeignDependentImplementation.create(
+                        interfaceDeclaration = dependentDeclaration,
+                        resolver = resolver,
+                        logger = logger,
+                    )
+                }
+            } ?: return null
+        }
 
     logger.info("Implementing interface ${declaration.qualifiedNameOrThrow.log}")
 
@@ -115,22 +120,25 @@ private fun InterfaceToImplement.FactoryMethod.implement(
             .arguments
             .map { dependentConstructorArgument ->
                 val key = dependentConstructorArgument.name
-                val factoryMethodParameter = factoryMethodsParameters.firstOrNull { parameterInfo ->
-                    parameterInfo.type == dependentConstructorArgument.type
-                }
+                val factoryMethodParameter =
+                    factoryMethodsParameters.firstOrNull { parameterInfo ->
+                        parameterInfo.type == dependentConstructorArgument.type
+                    }
                 if (factoryMethodParameter != null) {
                     factoryMethodsParameters.remove(factoryMethodParameter)
                     return@map key to factoryMethodParameter.name
                 }
-                val overrideConstructorProperty = overrideConstructorProperties.firstOrNull { parameterInfo ->
-                    parameterInfo.type == dependentConstructorArgument.type
-                }
+                val overrideConstructorProperty =
+                    overrideConstructorProperties.firstOrNull { parameterInfo ->
+                        parameterInfo.type == dependentConstructorArgument.type
+                    }
                 if (overrideConstructorProperty != null) {
                     return@map key to overrideConstructorProperty.name
                 }
-                val existencePrivateConstructorProperty = privateConstructorProperties.firstOrNull { parameterInfo ->
-                    parameterInfo.type == dependentConstructorArgument.type
-                }
+                val existencePrivateConstructorProperty =
+                    privateConstructorProperties.firstOrNull { parameterInfo ->
+                        parameterInfo.type == dependentConstructorArgument.type
+                    }
                 if (existencePrivateConstructorProperty != null) {
                     return@map key to existencePrivateConstructorProperty.name
                 }

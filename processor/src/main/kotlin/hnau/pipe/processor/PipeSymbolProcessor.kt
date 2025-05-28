@@ -6,6 +6,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
+import hnau.common.kotlin.ifFalse
 import hnau.pipe.processor.impl.InterfaceToImplement
 import hnau.pipe.processor.impl.create
 import hnau.pipe.processor.impl.implement
@@ -20,24 +21,27 @@ class PipeSymbolProcessor(
         resolver: Resolver,
     ): List<KSAnnotated> {
 
-        val annotateds = resolver
+        resolver
             .getSymbolsWithAnnotation(PipeAnnotationClassInfo.nameWithPackage)
-            .groupBy { it.validate() }
-
-        val interfacesToImplement = annotateds[true]
-            ?.map { annotated ->
+            .onEach { annotated ->
+                annotated
+                    .validate()
+                    .ifFalse {
+                        logger.warn("${annotated.location} is not valid")
+                    }
+            }
+            .map { annotated ->
                 InterfaceToImplement.create(
                     annotated = annotated,
                 )
             }
-            ?: emptyList()
+            .toList()
+            .implement(
+                codeGenerator = codeGenerator,
+                resolver = resolver,
+                logger = logger,
+            )
 
-        interfacesToImplement.implement(
-            codeGenerator = codeGenerator,
-            resolver = resolver,
-            logger = logger,
-        )
-
-        return annotateds[false] ?: emptyList()
+        return emptyList()
     }
 }
