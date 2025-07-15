@@ -8,6 +8,11 @@ tasks.create<Jar>("sourcesJar") {
     from(kotlin.sourceSets.main.get().kotlin)
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
