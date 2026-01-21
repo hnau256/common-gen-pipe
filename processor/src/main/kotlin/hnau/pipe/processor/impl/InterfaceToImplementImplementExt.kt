@@ -31,7 +31,6 @@ internal fun Iterable<InterfaceToImplement>.implement(
                     ?: return@mapNotNull null
                 implementedInterface.generateFile(
                     codeGenerator = codeGenerator,
-                    logger = logger,
                 )
                 implemented[interfaceToImplement.declaration] = implementedInterface
                 interfaceToImplement
@@ -50,7 +49,6 @@ internal fun Iterable<InterfaceToImplement>.implement(
                 transform = { it.declaration.qualifiedNameOrThrow.log },
             )
             error("Unable resolve dependencies tree, maybe there are circled dependencies between $remainingInterfaces")
-            return
         }
     } while (true)
 }

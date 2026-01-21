@@ -1,16 +1,18 @@
+import org.gradle.kotlin.dsl.register
+
 plugins {
     kotlin("jvm")
     id("maven-publish")
 }
 
-tasks.create<Jar>("sourcesJar") {
+tasks.register<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     from(kotlin.sourceSets.main.get().kotlin)
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 publishing {

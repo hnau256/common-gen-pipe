@@ -45,7 +45,6 @@ private fun KSTypeParameter.toTypeVariableNameLocal(): TypeVariableName {
 }
 
 internal fun ImplementedInterface.generateFile(
-    logger: KSPLogger,
     codeGenerator: CodeGenerator,
 ) {
 
@@ -55,9 +54,7 @@ internal fun ImplementedInterface.generateFile(
     val a = buildList {
         add(interfaceToImplement.declaration)
         addAll(
-            factoryMethods.map {it.result.declaration
-
-            }
+            factoryMethods.map { it.result.declaration }
         )
     }
     val implTypeParametersResolver =
@@ -94,8 +91,10 @@ internal fun ImplementedInterface.generateFile(
                                         type = argument.type.toTypeName(implTypeParametersResolver),
                                     )
                                 } catch (th: Throwable) {
-                                    error("Arguemnt: ${argument}. Resolver: ${implTypeParametersResolver.parametersMap}. Class: $implClass")
-                                    throw th
+                                    throw IllegalStateException(
+                                        "Argument: ${argument}. Resolver: ${implTypeParametersResolver.parametersMap}. Class: $implClass",
+                                        th
+                                    )
                                 }
                             }
                         )
@@ -127,9 +126,10 @@ internal fun ImplementedInterface.generateFile(
                 )
                 .addSuperinterface(
                     interfaceClass.run {
-                        val typeArguments = interfaceToImplement.declaration.typeParameters.map { typeParameter ->
-                            typeParameter.toTypeVariableName(implTypeParametersResolver)
-                        }.takeIf { it.isNotEmpty() }
+                        val typeArguments =
+                            interfaceToImplement.declaration.typeParameters.map { typeParameter ->
+                                typeParameter.toTypeVariableName(implTypeParametersResolver)
+                            }.takeIf { it.isNotEmpty() }
                         when (typeArguments) {
                             null -> this
                             else -> parameterizedBy(typeArguments)
